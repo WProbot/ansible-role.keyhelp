@@ -1,0 +1,7 @@
+---
+# defaults file for keyhelp
+
+hostname: panel.example.com
+username: user
+password: keyhelpPassw0rd
+email: user@example.com

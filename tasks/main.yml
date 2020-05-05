@@ -1,0 +1,25 @@
+---
+# tasks file for keyhelp
+
+- name: Copy install script
+  become: true
+  copy:
+    src: install_keyhelp.sh
+    dest: install_keyhelp.sh
+    mode: u+rwx
+
+- name: Template run script
+  become: true
+  template:
+    src: run.sh
+    dest: run.sh
+    mode: u+rwx
+
+- name: Install
+  become: true
+  script: run.sh
+
+- name: Clean up
+  file:
+    path: run.sh
+    state: absent
