@@ -12,14 +12,15 @@
   become: true
   template:
     src: run.sh
-    dest: run.sh
+    dest: /run.sh
     mode: u+rwx
 
 - name: Install
   become: true
-  script: run.sh
+  script: /run.sh
 
 - name: Clean up
+  become: true
   file:
-    path: run.sh
+    path: /run.sh
     state: absent
