@@ -1,14 +1,3 @@
 #!/bin/bash
 
-install_keyhelp.sh << ANSWERS
-N
-1
-{{ hostname }}
-2
-{{ username }}
-3
-{{ password }}
-4
-{{ email }}
-S
-ANSWERS
+install_keyhelp.sh --hostname-fqdn={{ hostname }} --admin-username={{ admin_username }} --admin-password={{ admin_password }} --admin-email={{ admin_email }} --non-interactive --no-reboot

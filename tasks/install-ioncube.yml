@@ -1,11 +1,6 @@
 ---
 
-- name: Get PHP version
-  shell: php -v | grep -oP "^PHP\s[0-9]\.[0-9]*" | cut -d" " -f2
-  register: php_version
-
 - set_fact:
-    php_version: "{{ php_version.stdout }}"
     ioncube_archive: "/tmp/ioncube.tar.gz"
     is_64bit: "{{ ansible_architecture in ['x86_64', 'ppc64le', 'armv7l', 'aarch64'] }}"
     extract_ioncube_to: /usr/local

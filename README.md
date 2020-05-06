@@ -21,12 +21,13 @@ Role Variables
 
 Modify the following variables for the installation.
 
-| Var        | Description         | Default             |
-| ---------- | ------------------- | ------------------- |
-| `hostname` | Keyhelp hostanem    | `panel.example.com` |
-| `username` | Admin user name     | `user`              |
-| `password` | Admin user password | `keyhelpPassw0rd`   |
-| `email`    | Admin user email    | `user@example.com`  |
+| Var              | Description                       | Default             |
+| ---------------- | --------------------------------- | ------------------- |
+| `hostname`       | Keyhelp hostname                  | `panel.example.com` |
+| `admin_username` | Admin user name                   | `user`              |
+| `admin_password` | Admin user password               | `keyhelpPassw0rd`   |
+| `admin_email`    | Admin user email                  | `user@example.com`  |
+| `reboot`         | Reboot host(s) after installation | `true`              |
 
 Example Playbook
 ----------------

@@ -7,15 +7,8 @@
     home: "{{ home_dir }}"
     # group: "{{ username }}"
 
-- name: Get PHP version
-  shell: php -v | grep -oP "^PHP\s[0-9]\.[0-9]*" | cut -d" " -f2
-  register: php_version
-
 - set_fact:
-    php_version: "{{ php_version.stdout }}"
     installer_archive: "/tmp/keyhelp.tar.gz"
-
-- set_fact:
     get_version: "https://install.keyhelp.de/get_version.php?encode=plain&php_version={{ php_version }}{% if debug_release %}&release_channel=debug{% endif %}"
 
 - name: Check version error

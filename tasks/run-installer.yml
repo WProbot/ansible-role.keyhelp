@@ -1,61 +1,22 @@
 ---
 
-# - name: Ensure Pip is installed.
-#   package: name={{ item }} state=present
-#   with_items:
-#     - python3-pip
-#     - python-pip
-
-# - name: Ensure pexpect is installed
-#   pip:
-#     name: pexpect
-
-# - name: Run installer
-#   expect:
-#     # command: php {{ installer_file }} --installer-version {{ installer_version }} --preferred-protocol {{ preferred_protocol }}
-#     command: php {{ installer_file }} --installer-version {{ installer_version }}
-#     responses:
-#       Question:
-#         - "N"
-#         - "1"
-#         - "{{ hostname }}"
-#         - "2"
-#         - "{{ username }}"
-#         - "3"
-#         - "{{ password }}"
-#         - "4"
-#         - "{{ email }}"
-#         - S
-
-
-- name: Template run script
-  template:
-    src: run-installer.sh
-    dest: /run.sh
-    mode: u+rwx
+# - name: Template run script
+#   template:
+#     src: run-installer.sh
+#     dest: /run.sh
+#     mode: u+rwx
 
 - name: Install
-  shell: /run.sh
+  # shell: /run.sh
+  command: "php {{ installer_file }} --hostname-fqdn={{ hostname }} --admin-username={{ admin_username }} --admin-password={{ admin_password }} --admin-email={{ admin_email }} --non-interactive --no-reboot"
   async: "{{ installer_timeout }}" # seconds
-  poll: 0
+  poll: 5
   register: installer
 
-- name: Wait for installer and host restart
-  wait_for:
-    host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-    port: "{{ ansible_port | default(22,boolean=True) }}"
-    delay: 10
-    state: stopped
-  ignore_errors: yes
-  no_log: yes
+# - name: Clean up
+#   file:
+#     path: /run.sh
+#     state: absent
 
-- name: Wait for the host to reboot.
-  wait_for_connection:
-    sleep: 5
-    delay: 60
-    timeout: 300
-
-- name: Clean up
-  file:
-    path: /run.sh
-    state: absent
+- debug:
+    msg: "{{ installer.stdout.split('\n') }}"

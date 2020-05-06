@@ -1,5 +1,5 @@
 ---
-# tasks file for keyhelp
+# main tasks file for keyhelp
 
 - block:
     - include_tasks: tasks/prepare-os.yml
@@ -14,3 +14,30 @@
     - include_tasks: tasks/install-with-script.yml
   become: true
   when: install_with_script
+
+- debug:
+    msg: Installation complete
+
+- debug:
+    msg: You should run a system reboot.
+  when: not reboot
+
+- block:
+    # - name: Reboot the system with all defaults
+    #   reboot:
+    #   async: 10
+    #   poll: 0
+
+    - name: Reboot
+      shell: reboot
+      async: 10
+      poll: 0
+
+    - name: Wait for host to reboot
+      wait_for:
+        port: "{{ (ansible_port|default(ansible_ssh_port))|default(22) }}"
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        delay: 10  # Do not check for at least 10 sec
+      connection: local
+  when: reboot

@@ -53,3 +53,10 @@
 - name: Clean apt cache
   apt:
     autoclean: yes
+
+- name: Get PHP version
+  shell: php -v | grep -oP "^PHP\s[0-9]\.[0-9]*" | cut -d" " -f2
+  register: php_version
+
+- set_fact:
+    php_version: "{{ php_version.stdout }}"
