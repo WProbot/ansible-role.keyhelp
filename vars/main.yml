@@ -9,3 +9,4 @@ home_dir: "/home/{{ username }}"
 installer_dir: "{{ home_dir }}/www/keyhelp"
 installer_file: "{{ installer_dir }}/install/install.php"
 installer_timeout: 300    # seconds
+install_with_script: true
