@@ -2,9 +2,9 @@
 # tasks file for keyhelp
 
 - block:
-    # - include_tasks: tasks/prepare-os.yml
-    # - include_tasks: tasks/install-php.yml
-    # - include_tasks: tasks/download-installer.yml
-    # - include_tasks: tasks/install-ioncube.yml
+    - include_tasks: tasks/prepare-os.yml
+    - include_tasks: tasks/install-php.yml
+    - include_tasks: tasks/download-installer.yml
+    - include_tasks: tasks/install-ioncube.yml
     - include_tasks: tasks/run-installer.yml
   become: true
