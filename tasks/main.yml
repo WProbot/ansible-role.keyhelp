@@ -10,6 +10,7 @@
   become: true
   when: not install_with_script
 
-- include_tasks: tasks/install-with-script.yml
+- block:
+    - include_tasks: tasks/install-with-script.yml
   become: true
   when: install_with_script
