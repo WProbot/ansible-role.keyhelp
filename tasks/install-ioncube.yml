@@ -1,0 +1,49 @@
+---
+
+- name: Get PHP version
+  shell: php -v | grep -oP "^PHP\s[0-9]\.[0-9]*" | cut -d" " -f2
+  register: php_version
+
+- set_fact:
+    php_version: "{{ php_version.stdout }}"
+    ioncube_archive: "/tmp/ioncube.tar.gz"
+    is_64bit: "{{ ansible_architecture in ['x86_64', 'ppc64le', 'armv7l', 'aarch64'] }}"
+    extract_ioncube_to: /usr/local
+
+- set_fact:
+    ioncube_download_url: "http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86{% if is_64bit %}-64{% endif %}.tar.gz"
+    ioncube_sofile: "{{ extract_ioncube_to }}/ioncube/ioncube_loader_lin_{{ php_version }}.so"
+    ioncube_ini_path: "/etc/php{% if php_version|float >= 7.0 %}/{{ php_version }}{% else %}5{% endif %}/mods-available/ioncube.ini"
+
+
+- name: Download ionCube
+  get_url:
+    url: "{{ ioncube_download_url }}"
+    dest: "{{ ioncube_archive }}"
+
+- name: "Ensure `{{ extract_ioncube_to }}` directory is present"
+  file:
+    path: "{{ extract_ioncube_to }}"
+    state: directory
+
+- name: Extract ionCube
+  unarchive:
+    src: "{{ ioncube_archive }}"
+    dest: "{{ extract_ioncube_to }}"
+    remote_src: yes
+
+- file:
+    dest: "{{ ioncube_sofile }}"
+    owner: root
+    group: root
+
+- template:
+    src: ioncube.ini
+    dest: "{{ ioncube_ini_path }}"
+
+# Enable ioncube.ini
+# First perform dismod, in case the installer is called multiple times.
+- shell: phpdismod ioncube; phpenmod ioncube
+  when: php_version|float >= 7.0
+- shell: php5dismod ioncube; php5enmod ioncube/01
+  when: php_version|float < 7.0

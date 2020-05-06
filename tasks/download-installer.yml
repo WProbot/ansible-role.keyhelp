@@ -1,0 +1,97 @@
+---
+
+- name: Create `keyhelp` user
+  user:
+    name: "{{ username }}"
+    comment: KeyHelp
+    home: "{{ home_dir }}"
+    # group: "{{ username }}"
+
+- name: Get PHP version
+  shell: php -v | grep -oP "^PHP\s[0-9]\.[0-9]*" | cut -d" " -f2
+  register: php_version
+
+- set_fact:
+    php_version: "{{ php_version.stdout }}"
+    installer_archive: "/tmp/keyhelp.tar.gz"
+
+- set_fact:
+    get_version: "https://install.keyhelp.de/get_version.php?encode=plain&php_version={{ php_version }}{% if debug_release %}&release_channel=debug{% endif %}"
+
+- name: Check version error
+  shell: wget --prefer-family="{{ preferred_protocol }}" --quiet --no-check-certificate -O- "{{ get_version }}"
+  register: line
+  no_log: yes
+
+- name: Get release info into dict
+  set_fact:
+    release_info: "{{ release_info|default({}) | combine( dict([ item.partition('=')[::2]|map('trim') ]) ) }}"
+  with_items: "{{ line.stdout_lines }}"
+  no_log: yes
+
+- name: Fail if any error getting release info
+  fail:
+    msg: "{{ release_info.error_msg }}"
+  when: release_info.error is defined and (release_info.error==true or release_info.error=="true")
+
+- name: Fail if not able to obtain download link
+  fail:
+    msg: Could not obtain download link
+  when: release_info is not defined or release_info.download is not defined
+
+- name: Download KeyHelp
+  get_url:
+    url: "{{ release_info.download }}"
+    dest: "{{ installer_archive }}"
+    # checksum: "sha1:{{ release_info.sha1 }}"
+
+- debug:
+    msg: Skipping checksum check, sha1 not defined.
+  when: release_info.sha1 is not defined
+
+# Use sha1 to calculate checksum
+- block:
+    - stat:
+        path: "{{ installer_archive }}"
+        checksum_algorithm: sha1
+      register: installer_archive_stat
+    - name: Check checksum
+      fail:
+        msg: Checksum check failed - please try again / contact KeyHelp support!
+      when: installer_archive_stat.stat.checksum != release_info.sha1
+  when: release_info.sha1 is defined
+
+- name: Ensure installer directory is present
+  file:
+    path: "{{ installer_dir }}"
+    state: directory
+    mode: 0755
+    recurse: yes
+
+# - file:
+#     path: "{{ installer_dir }}/*"
+#     state: absent
+
+- name: Extract installer
+  unarchive:
+    src: "{{ installer_archive }}"
+    dest: "{{ installer_dir }}"
+    remote_src: yes
+
+- file:
+    dest: "{{ installer_dir }}"
+    mode: 0755
+    recurse: yes
+
+- name: Deploy dummy license
+  copy:
+    src: license.txt
+    dest: "{{ installer_dir }}/license.txt"
+    mode: 0600
+
+- file:
+    dest: "{{ home_dir }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+

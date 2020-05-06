@@ -1,0 +1,55 @@
+---
+
+- name: Clean up
+  file:
+    path: /var/lib/apt/lists/
+    state: absent
+
+- name: Update and upgrade apt packages
+  shell: apt update
+
+# - apt:
+#     name: software-properties-common
+#     state: present
+
+- set_fact:
+    php_packages: [ php5, php5-mysqlnd, php5-intl, php5-readline ]
+    run_phpenmod: false
+  when:
+    - ansible_distribution=="Ubuntu" and ansible_distribution_version=="14.04"
+    - ansible_distribution=="Debian" and ansible_distribution_version=="8"
+
+- set_fact:
+    php_packages: [ php, php-mysqlnd, php-intl, php-mbstring, php7.0-readline ]
+    # php_packages: [ php7.3, php7.3-mysql, php7.3-intl, php7.3-mbstring, php7.3-readline, php7.3-cli, php7.3-fpm, php7.3-json, php7.3-pdo, php7.3-zip, php7.3-gd, php7.3-curl, php7.3-xml, php7.3-bcmath, php7.3-json, php7.3-gmp ]
+    run_phpenmod: true
+  when:
+    - ansible_distribution=="Ubuntu" and ansible_distribution_version=="16.04"
+    - ansible_distribution=="Debian" and ansible_distribution_version=="9"
+
+- set_fact:
+    php_packages: [ php, php7.2-mysql, php-intl, php-mbstring, php7.2-readline ]
+    # php_packages: [ php7.3, php7.3-mysql, php7.3-intl, php7.3-mbstring, php7.3-readline, php7.3-cli, php7.3-fpm, php7.3-json, php7.3-pdo, php7.3-zip, php7.3-gd, php7.3-curl, php7.3-xml, php7.3-bcmath, php7.3-json, php7.3-gmp ]
+    run_phpenmod: true
+  when: ansible_distribution=="Ubuntu" and ansible_distribution_version=="18.04"
+
+- set_fact:
+    php_packages: [ php, php-mysql, php-intl, php-mbstring, php-readline ]
+    run_phpenmod: true
+  when: ansible_distribution=="Debian" and ansible_distribution_version=="10"
+
+- name: Install PHP packages
+  apt:
+    name: "{{ php_packages }}"
+    state: present
+
+- command: phpenmod mbstring
+  when: run_phpenmod
+
+- name: Remove useless apt dependencies
+  apt:
+    autoremove: yes
+
+- name: Clean apt cache
+  apt:
+    autoclean: yes

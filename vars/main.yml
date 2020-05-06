@@ -1,0 +1,11 @@
+---
+# vars file for docker-web-stack
+
+installer_version: 1
+debug_release: false      # Get KeyHelp from debug release channel
+preferred_protocol: ipv4  # Values: `ipv4`, `ipv6`, `none`
+username: keyhelp
+home_dir: "/home/{{ username }}"
+installer_dir: "{{ home_dir }}/www/keyhelp"
+installer_file: "{{ installer_dir }}/install/install.php"
+installer_timeout: 300    # seconds

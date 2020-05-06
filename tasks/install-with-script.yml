@@ -1,0 +1,40 @@
+---
+# tasks file for keyhelp
+
+- name: Copy install script
+  copy:
+    src: install_keyhelp.sh
+    dest: install_keyhelp.sh
+    mode: u+rwx
+
+- name: Template run script
+  template:
+    src: run-script.sh
+    dest: /run.sh
+    mode: u+rwx
+
+- name: Install
+  command: /run.sh
+  async: "{{ installer_timeout }}" # seconds
+  poll: 0
+  register: installer
+
+- name: Wait for installer and host restart
+  wait_for:
+    host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    port: "{{ ansible_port | default(22,boolean=True) }}"
+    delay: 10
+    state: stopped
+  ignore_errors: yes
+  no_log: yes
+
+- name: Wait for the host to reboot.
+  wait_for_connection:
+    sleep: 5
+    delay: 60
+    timeout: 300
+
+- name: Clean up
+  file:
+    path: /run.sh
+    state: absent
